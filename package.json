@@ -1,0 +1,53 @@
+{
+  "name": "@webqit/node-live-response",
+  "publishConfig": {
+    "access": "public"
+  },
+  "title": "LiveResponse for Node.js & Express",
+  "description": "LiveResponse for Node.js & Express",
+  "keywords": [
+    "liveresponse",
+    "live-response",
+    "http",
+    "express",
+    "node",
+    "websocket",
+    "realtime",
+    "webqit"
+  ],
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webqit/node-live-response.git"
+  },
+  "bugs": {
+    "url": "https://github.com/webqit/node-live-response/issues"
+  },
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "test": "mocha --extension .test.js --recursive --timeout 5000 --exit",
+    "preversion": "npm run test",
+    "postversion": "git push && git push --tags",
+    "version:next": "npm version prerelease --preid=next"
+  },
+  "dependencies": {
+    "@webqit/fetch-plus": "file:../fetch-plus",
+    "@webqit/port-plus": "^0.1.12"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "esbuild": "^0.20.2",
+    "mocha": "^10.3.0"
+  },
+  "author": "Oxford Harrison <oxharris.dev@gmail.com>",
+  "maintainers": [
+    "Oxford Harrison <oxharris.dev@gmail.com>"
+  ],
+  "contributors": []
+}
