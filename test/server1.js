@@ -25,7 +25,6 @@ async function handler(req, res) {
     await res.send(liveRes); // resolves when live mode is established
 
     const interval = setInterval(() => {
-        console.log('_________________________', state.count);
         Observer.set(state, 'count', state.count + 1);
     }, 1_000);
 
