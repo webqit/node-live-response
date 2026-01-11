@@ -29,7 +29,7 @@ export function enableLive(server) {
 export const portRegistry = new Map();
 
 export function setupLiveRoute(req, res) {
-    const port = new StarPort();
+    const port = new StarPort({ handshake: 1, postAwaitsOpen: true, autoClose: true });
     const portId = crypto.randomUUID();
 
     portRegistry.set(portId, port);
@@ -92,16 +92,14 @@ export function setupLiveRoute(req, res) {
     }
 
     // ---- intercept Express-style response exits ----
-    if (originalSend) {
-        res.send = (value) => {
-            if (value instanceof LiveResponse) {
-                commitLiveResponse(value);
-                return req.port.readyStateChange('open').then(() => res);
-            }
-            return originalSend(value);
-        };
-    }
-
+    res.send = (value) => {
+        if (value instanceof LiveResponse) {
+            commitLiveResponse(value);
+            return req.port.readyStateChange('open').then(() => res);
+        }
+        return (originalSend || originalEnd)(value);
+    };
+    
     res.end = (...args) => {
         // Only end live mode if no LiveResponse was ever committed
         if (!hasLiveResponse) {
@@ -124,7 +122,7 @@ export function handleUpgrade(server) {
         }
 
         wss.handleUpgrade(req, socket, head, (ws) => {
-            const wsPort = new WebSocketPort(ws);
+            const wsPort = new WebSocketPort(ws, { handshake: 1, postAwaitsOpen: true });
             portRegistry.get(portId).addPort(wsPort);
         });
     });

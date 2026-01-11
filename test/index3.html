@@ -1,0 +1,34 @@
+<!doctype html>
+
+<head>
+  <title>Live Chat</title>
+  <script src="https://unpkg.com/@webqit/fetch-plus/dist/main.js"></script>
+</head>
+
+<body>
+
+  <h1>Chat</h1>
+  <ul id="log"></ul>
+  <input id="msg" placeholder="Type and press enter" />
+
+  <script type="module">
+    const { LiveResponse } = window.webqit;
+    
+    const { port } = await LiveResponse.from(fetch('/chat')).now();
+    port.addEventListener('message', (e) => {
+        const li = document.createElement('li');
+        li.textContent = e.data;
+        log.appendChild(li);
+    });
+
+    const msg = document.querySelector('#msg');
+    msg.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            port.postMessage(msg.value);
+            msg.value = '';
+        }
+    });
+  </script>
+</body>
+
+</html>

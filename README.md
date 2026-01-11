@@ -2,7 +2,7 @@
 
 This package brings **LiveResponse** to traditional Node.js and Express backends.
 
-LiveResponse is a new response model that extends the HTTP request/response model with interactivity. It allows you to send a response and keep it open for interaction. You want to see the [LiveResponse docs](https://github.com/webqit/fetch-plus?tab=readme-ov-file#section-1-liveresponse) for more details.
+LiveResponse is a new response model that extends the HTTP request/response model with interactivity. It allows you to send a response and keep it open for interaction. More details in the [LiveResponse docs](https://github.com/webqit/fetch-plus?tab=readme-ov-file#section-1-liveresponse).
 
 The definitive way to get full, always‑on interactivity as a core architectural primitive is **[Webflo](https://github.com/webqit/webflo)**. Live responses are native and automatic there. This package exists for cases where you want LiveResponse inside an otherwise conventional Node.js or Express backend.
 
@@ -107,12 +107,12 @@ app.get('/counter', liveMode(), async (req, res) => {
 
     const interval = setInterval(() => {
         Observer.set(state, 'count', state.count + 1);
-    }, 1000);
+    }, 1_000);
 
     setTimeout(() => {
         clearInterval(interval);
         res.die();
-    }, 10000);
+    }, 60_000);
 });
 ```
 
@@ -147,17 +147,20 @@ A live response can be replaced with a new one – without opening a new request
 
 ```js
 app.get('/news', liveMode(), async (req, res) => {
-    const liveRes = new LiveResponse({ headline: 'Breaking: Hello World' });
+    const liveRes = new LiveResponse({ headline: 'Breaking: Hello World' }, { done: false });
     await res.send(liveRes); // resolves when live mode is established
 
     setTimeout(() => {
-        liveRes.replaceWith({ headline: 'Update: Still Hello World' });
-    }, 3000);
+        liveRes.replaceWith({ headline: 'Update: Still Hello World' }, { done: false });
+    }, 3_000);
 
     setTimeout(() => {
         liveRes.replaceWith({ headline: 'Final: Goodbye' });
+    }, 6_000);
+
+    setTimeout(() => {
         res.die();
-    }, 6000);
+    }, 60_000);
 });
 ```
 
@@ -170,13 +173,15 @@ Then on the client:
   <script src="https://unpkg.com/@webqit/fetch-plus/dist/main.js"></script>
 </head>
 <body>
+
   <h1></h1>
+
   <script type="module">
     const { LiveResponse } = window.webqit;
     
     const liveRes = LiveResponse.from(fetch('/news'));
-    liveRes.addEventListener('response', (e) => {
-        document.querySelector('h1').textContent = e.body.headline;
+    liveRes.addEventListener('replace', (e) => {
+        document.querySelector('h1').textContent = e.data.body.headline;
     });
   </script>
 </body>
@@ -194,6 +199,10 @@ app.get('/chat', liveMode(), async (req, res) => {
     req.port.addEventListener('message', (e) => {
         req.port.postMessage(e.data);
     });
+
+    setTimeout(() => {
+        res.die();
+    }, 60_000);
 });
 ```
 
@@ -214,8 +223,8 @@ Then on the client:
   <script type="module">
     const { LiveResponse } = window.webqit;
     
-    const liveRes = LiveResponse.from(fetch('/chat'));
-    liveRes.port.addEventListener('message', (e) => {
+    const { port } = await LiveResponse.from(fetch('/chat')).now();
+    port.addEventListener('message', (e) => {
         const li = document.createElement('li');
         li.textContent = e.data;
         log.appendChild(li);
@@ -224,7 +233,7 @@ Then on the client:
     const msg = document.querySelector('#msg');
     msg.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            liveRes.port.postMessage(msg.value);
+            port.postMessage(msg.value);
             msg.value = '';
         }
     });

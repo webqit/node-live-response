@@ -1,0 +1,23 @@
+<!doctype html>
+
+<head>
+  <title>Live Counter</title>
+  <script src="https://unpkg.com/@webqit/fetch-plus/dist/main.js"></script>
+</head>
+
+<body>
+
+  <h1></h1>
+
+  <script type="module">
+    const { LiveResponse, Observer } = window.webqit;
+    
+    const { body: state } = await LiveResponse.from(fetch('/counter')).now();
+
+    Observer.observe(state, () => {
+        document.querySelector('h1').textContent = 'Count: ' + state.count;
+    });
+  </script>
+</body>
+
+</html>

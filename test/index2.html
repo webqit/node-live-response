@@ -1,0 +1,22 @@
+<!doctype html>
+
+<head>
+  <title>Live News</title>
+  <script src="https://unpkg.com/@webqit/fetch-plus/dist/main.js"></script>
+</head>
+
+<body>
+
+  <h1></h1>
+
+  <script type="module">
+    const { LiveResponse } = window.webqit;
+    
+    const liveRes = LiveResponse.from(fetch('/news'));
+    liveRes.addEventListener('replace', (e) => {
+        document.querySelector('h1').textContent = e.data.body.headline;
+    });
+  </script>
+</body>
+
+</html>
