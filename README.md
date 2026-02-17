@@ -242,6 +242,8 @@ Exchange messages between client and server through a message port.
 
 (More in the [LiveResponse docs](https://github.com/webqit/fetch-plus?tab=readme-ov-file#3-bidirectional-messaging-via-message-ports))
 
+On the server:
+
 ```js
 app.get('/chat', liveMode(), async (req, res) => {
     const liveRes = new LiveResponse({ title: 'Chat' });
