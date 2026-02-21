@@ -36,8 +36,8 @@
     "version:next": "npm version prerelease --preid=next"
   },
   "dependencies": {
-    "@webqit/fetch-plus": "^0.1.32",
-    "@webqit/port-plus": "^0.1.22",
+    "@webqit/fetch-plus": "^0.1.33",
+    "@webqit/port-plus": "^0.1.23",
     "ws": "^8.19.0"
   },
   "devDependencies": {
