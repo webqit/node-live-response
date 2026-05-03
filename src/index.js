@@ -9,21 +9,16 @@ export function enableLive(server) {
     // One-time WS setup
     handleUpgrade(server);
 
-    function live(req, res, next) {
-        // Node-style usage: live(req, res)
-        if (req && res) {
-            setupLiveRoute(req, res);
-            return;
-        }
-
-        // Express-style usage: live()
-        return (req, res, next) => {
-            setupLiveRoute(req, res);
+    function liveMode(req, res, next) {
+        // Node-style usage: liveMode(req, res)
+        // Express-style usage: app.get('/live', liveMode, (req, res) => { ... }); 
+        setupLiveRoute(req, res);
+        if (next) {
             next();
-        };
+        }
     }
 
-    return live;
+    return liveMode;
 }
 
 export const portRegistry = new Map();
@@ -95,7 +90,7 @@ export function setupLiveRoute(req, res) {
     res.send = (value) => {
         if (value instanceof LiveResponse) {
             commitLiveResponse(value);
-            return req.port.readyStateChange('open').then(() => res);
+            return req.port?.readyStateChange('open').then(() => res);
         }
         return (originalSend || originalEnd)(value);
     };

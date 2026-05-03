@@ -1,15 +1,75 @@
 # LiveResponse for Node.js & Express
 
-This package brings **LiveResponse** to traditional Node.js and Express servers.
+> **Realtime applications in just a single primitive**
 
-LiveResponse extends the HTTP request/response model with **persistent interactivity**. You send a response — and keep it open as a live communication channel.
+This package brings **LiveResponse** to traditional Node.js and Express backends.
 
-Instead of closing after delivery, the response becomes interactive.
+**LiveResponse** extends the *stateless* HTTP request/response model with **stateful, updatable, and interactive responses** for realtime applications.
 
-For the full conceptual model, see the [LiveResponse docs](https://github.com/webqit/fetch-plus?tab=readme-ov-file#section-1-liveresponse).
+A "live" response is an HTTP response that can be updated, replaced, and interacted with after it is sent.
 
-If you’re building a system where live interactivity is a first-class architectural primitive, use **[Webflo](https://github.com/webqit/webflo)**. Live responses are native there.
-This package exists for cases where you want LiveResponse inside an otherwise conventional Node.js or Express backend.
+For example, you can send a response on the server and mutate it in-place as you progressively process the request:
+
+```js
+app.get('/counter', liveMode, async (req, res) => {
+    const state = { count: 0 };
+
+    await res.send(new LiveResponse(state));
+
+    setInterval(() => {
+        Observer.set(state, 'count', state.count + 1);
+    }, 1000);
+});
+```
+
+On receiving the response, the client can observe those changes in real time:
+
+```html
+<script type="module">
+  const { body: state } = await LiveResponse.from(fetch('/counter')).now();
+
+  console.log('Initial:', state.count);
+
+  Observer.observe(state, () => {
+    console.log('Current:', state.count);
+  });
+</script>
+```
+
+Above:
+
++ [`Observer`](https://github.com/webqit/observer) helps make mutations on the ordinary object reactive and observable.
++ `LiveResponse` carries the object as live state through the wire–keeping it synchronized with the client. (**LiveResponse** lets the host runtime decide the underlying update path. e.g. WebSocket)
++ `@webqit/node-live-response` itself–the host runtime–establishes a WebSocket channel under the hood for the update path.
+
+The model broadens into various shapes of realtime applications–**built out of just a single primitive**.
+
+---
+
+## The Model
+
+HTTP is a **stateless** protocol; traditional responses are **immutable snapshots**. Realtime apps have to split communication into two parts:
+
++ the conventional HTTP request/response model
++ a separate real-time channel (WebSocket, SSE) for updates
+
+This split introduces coordination overhead — two lifecycles, two APIs, and complex state engineering.
+
+**LiveResponse** removes this split by **making the response itself stateful–updatable, replaceable, and interactive**.
+
+**LiveResponse** is the full traditional real-time stack merged back into the existing request/response model.
+
+---
+
+## Context
+
+**"Live Response"** is a new response model over the existing HTTP request/response model.
+
+It is being developed at **[WebQit](https://github.com/webqit)** for a new class of applications and agentic workflows.
+
+The core primitive `LiveResponse` is fully documented in the [LiveResponse README](https://github.com/webqit/fetch-plus?tab=readme-ov-file#section-1-liveresponse) along with a detailed conceptual model.
+
+If you’re building a system that is state-sensitive or highly interaction, use the **[Webflo](https://github.com/webqit/webflo)** framework. Live responses are native there. This package exists for the barest minimal **LiveResponse** implementations.
 
 ---
 
@@ -23,7 +83,7 @@ npm install @webqit/node-live-response
 
 ## One-Time Setup
 
-The first thing you do is enable live mode on your HTTP server instance. This installs the transport layer and request bookkeeping required for live sessions.
+The first thing you do is enable live mode on your HTTP server instance. This sets up the transport layer and request bookkeeping required for live sessions.
 
 ### Node.js HTTP server
 
@@ -49,15 +109,17 @@ const server = app.listen(3000);
 const liveMode = enableLive(server);
 ```
 
+> Note that as shown above `enableLive` needs the HTTP Server instance itself, not the Express `app` object.
+
 ---
 
 ## Usage
 
-The returned `liveMode` function enables live mode per route.
+The returned `liveMode` function is used per-route to opt a route into live mode.
 
 It works both as:
 
-* a direct function (Node HTTP)
+* a direct callable function
 * an Express middleware
 
 ### Node.js HTTP server
@@ -67,12 +129,14 @@ async function handler(req, res) {
     liveMode(req, res);
 
     const liveRes = new LiveResponse('Hello world');
-    await res.send(liveRes); // resolves when the live connection is established
+    await res.send(liveRes); // resolves when the client receives the response and joins the live connection
 
-    // ---- interactive phase ----
+    // ---- response remains open for interactive after send()  ----
+    // ---- mutate, replace, or interact with the response here ----
+    // ---- call res.die() to explicitly end live mode          ----
 
     setTimeout(() => {
-        res.die(); // explicitly end live mode
+        res.die();
     }, 5000);
 }
 ```
@@ -80,12 +144,14 @@ async function handler(req, res) {
 ### Express
 
 ```js
-app.get('/counter', liveMode(), async (req, res) => {
+app.get('/counter', liveMode, async (req, res) => {
     const liveRes = new LiveResponse('Hello world');
-    await res.send(liveRes); // resolves when the live connection is established
-    
-    // ---- interactive phase ----
-    
+    await res.send(liveRes); // resolves when the client receives the response and joins the live connection
+
+    // ---- response remains open for interactive after send()  ----
+    // ---- mutate, replace, or interact with the response here ----
+    // ---- call res.die() to explicitly end live mode          ----
+
     setTimeout(() => {
         res.die();
     }, 5000);
@@ -104,7 +170,7 @@ LiveResponse supports three core interaction patterns.
 
 Send a mutable object as the response body.
 
-Mutations on the server automatically propagate to the client.
+Mutations on the server automatically apply to the client-side copy.
 
 (More in the [LiveResponse docs](https://github.com/webqit/fetch-plus#1-live-state-projection-via-mutable-response-bodies))
 
@@ -113,7 +179,7 @@ On the server:
 ```js
 import { Observer } from '@webqit/observer';
 
-app.get('/counter', liveMode(), async (req, res) => {
+app.get('/counter', liveMode, async (req, res) => {
     const state = { count: 0 };
 
     const liveRes = new LiveResponse(state);
@@ -155,14 +221,14 @@ On the client:
 </html>
 ```
 
+Above, `await LiveResponse.from(fetch('/counter')).now()` takes a `fetch` call and gives you back the HTTP response as a parsed object. But `LiveResponse` does more under the hood:
+
++ Detects that the response is a live response
++ Automatically joins the live channel created on the server
++ Keeps remote state and local state in sync
+
 > [!TIP]
-> This example can be previewed live by running:
->
-> ```
-> cd node-live-response
-> node test/server1.js
-> ```
-> _Open localhost:3000 to view_
+> This example can be previewed live from your local `@webqit/node-live-response` installation. See the **[Playground](https://github.com/webqit/node-live-response/tree/main/playground)**.
 
 ---
 
@@ -170,14 +236,14 @@ On the client:
 
 Replace the current response with a new one — without issuing a new HTTP request.
 
-This enables a multi-response architecture over a single request.
+This gives you a multi-response model over a single request.
 
 (More in the [LiveResponse docs](https://github.com/webqit/fetch-plus?tab=readme-ov-file#2-a-multi-response-architecture-via-response-swaps))
 
 On the server:
 
 ```js
-app.get('/news', liveMode(), async (req, res) => {
+app.get('/news', liveMode, async (req, res) => {
     const liveRes = new LiveResponse(
         { headline: 'Breaking: Hello World' },
         { done: false }
@@ -225,14 +291,16 @@ On the client:
 </body>
 ```
 
+Above, `LiveResponse.from(fetch('/news'))` takes a `fetch` call and gives you back a `LiveResponse` interface over the ongoing HTTP request. It is on this interface you do `.addEventListener('replace')`.
+
+Meanwhile, under the hood `LiveResponse` does:
+
++ Detects that the response is a live response
++ Automatically joins the live channel created on the server
++ Keeps remote state and local state in sync–while exposing response swaps as `'replace'` events
+
 > [!TIP]
-> This example can be previewed live by running:
->
-> ```
-> cd node-live-response
-> node test/server2.js
-> ```
-> _Open localhost:3000 to view_
+> This example can be previewed live from your local `@webqit/node-live-response` installation. See the **[Playground](https://github.com/webqit/node-live-response/tree/main/playground)**.
 
 ---
 
@@ -245,7 +313,7 @@ Exchange messages between client and server through a message port.
 On the server:
 
 ```js
-app.get('/chat', liveMode(), async (req, res) => {
+app.get('/chat', liveMode, async (req, res) => {
     const liveRes = new LiveResponse({ title: 'Chat' });
     await res.send(liveRes);
 
@@ -294,35 +362,37 @@ On the client:
 </body>
 ```
 
+Above, `await LiveResponse.from(fetch('/counter')).now()` takes a `fetch` call and gives you back the HTTP response as a parsed object. The returned object always includes the underlying communication port (`port`) that powers the live response session. It is on this `port` you do `.addEventListener('message')`.
+
+As before, under the hood `LiveResponse` does:
+
++ Detects that the response is a live response
++ Automatically joins the live channel created on the server
++ Keeps remote state and local state in sync–while exposing the underlying channel (`port`) for bidirectional messaging
+
 > [!TIP]
-> This example can be previewed live by running:
->
-> ```
-> cd node-live-response
-> node test/server3.js
-> ```
-> _Open localhost:3000 to view_
+> This example can be previewed live from your local `@webqit/node-live-response` installation. See the **[Playground](https://github.com/webqit/node-live-response/tree/main/playground)**.
 
 ---
 
-## What This Library Adds
+## About `@webqit/node-live-response` Itself
 
 `@webqit/node-live-response` augments the standard Node/Express request lifecycle:
 
-* Adds `req.port` for bidirectional messaging
-* Adds `req.signal` for live session lifecycle tracking
+* Introduces `req.port` for bidirectional messaging
+* Introduces `req.signal` for tracking live session lifecycles
 * Patches `res.send()` / `res.end()` to accept `LiveResponse`
-* Adds `res.die()` to explicitly terminate live interaction
+* Introduces `res.die()` to explicitly terminate live interaction
 
 ---
 
-## Lifecycle Contract
+## Lifecycle Behaviours
 
-Live interaction has its own lifecycle, separate from the HTTP lifecycle.
+Live responses have their own lifecycle.
 
-### Interactivity starts
+### When interactivity starts
 
-Interactivity begins when you send a `LiveResponse`:
+Interactivity begins when you send a `LiveResponse` and the client has received it:
 
 ```js
 await res.send(liveRes);
@@ -330,11 +400,12 @@ await res.send(liveRes);
 
 That is the moment the client learns that the response is interactive and joins the live channel.
 
-The `send()` method, this time, returns promise that resolves when the client has joined the live channel.
+The `send()` method, returns a promise that resolves when the client joins the live channel.
 
-You may await this promise where necessary, but messages or response swaps issued before the connection is fully established are automatically queued and flushed once live mode becomes active.
+> [!TIP]
+> You may await this promise where necessary–e.g. you want the client to already receive the response and join the live channel before your next update. In the general case, awaiting this promise is often not necessary. Messages or response swaps issued before the client joins are automatically queued and flushed when the client joins.
 
-The transition to an "open" connection may also be observed via:
+In addition to `send()` resolving, `req.port` also transitions to an "open" state when the client joins. That transition is observable:
 
 ```js
 await req.port.readyStateChange('open');
@@ -342,7 +413,7 @@ await req.port.readyStateChange('open');
 
 ---
 
-### Interactivity ends
+### When interactivity ends
 
 Live interaction ends when the LiveResponse port on the client side is closed or when you explicitly call:
 
@@ -350,13 +421,11 @@ Live interaction ends when the LiveResponse port on the client side is closed or
 res.die();
 ```
 
-on the server. This method aborts the request lifecycle signal exposed at `req.signal`.
+on the server.
 
-Note that ending the HTTP response does **not** end the live session.
+> This method also aborts the request lifecycle signal exposed at `req.signal`.
 
-The HTTP lifecycle and the live lifecycle are independent.
-
-The transition to a "closed" connection may be observed via:
+On termination, `req.port` transitions to an "closed" state. That transition is also observable:
 
 ```js
 await req.port.readyStateChange('close');
