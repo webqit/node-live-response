@@ -37,7 +37,7 @@ These recipes demonstrate **LinkedQL's** live queries and sync capabilities.
 **Architecture: Direct Live Queries**
 Demonstrates live queries over PostgreSQL where the live result is projected across the wire and obtained on the client side by reference. The server acts as a conduit, running the queries against PostgreSQL and sending the result as a live response. 
 
-### [5_edge_query](./5_edge_query)
+### [5_remote_queries](./5_remote_queries)
 **Architecture: EdgeWorker Integration**
 Demonstrates integrating queries with a dedicated `EdgeWorker`. Here, the `EdgeWorker` exposes a remote PostgreSQL database, and the client application directly queries it using an `EdgeClient`. Live queries still work seamlessly across the protocol.
 
