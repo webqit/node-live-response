@@ -16,7 +16,7 @@ These recipes demonstrate the **live response** model independently. They build 
 Demonstrates LiveResponse's most fundamental feature: **sending a mutable object as the response body**. Server-side mutations made to this object automatically update the client-side copy in real-time.
 
 ### [2_multi_response](./2_multi_response)
-Demonstrates LiveResponse's The Multi-Response Model where responses are **swapped out with another completely new one over a single HTTP request**—without ever needing to issue a new request.
+Demonstrates LiveResponse's multi-response model where responses are **swapped with newer ones over a single HTTP request**.
 
 ### [3_messaging](./3_messaging)
 Demonstrates LiveResponse's messaging model: exchanging messages between the client and server through an exposed **communication port** natively provided by the live response channel.
