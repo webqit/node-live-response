@@ -53,7 +53,7 @@ async function handler(req, res) {
         return;
     }
 
-    return fs.createReadStream('./playground/5_remote_queries/index.html').pipe(res);
+    return fs.createReadStream('./playground/5_remote_querying/index.html').pipe(res);
 }
 
 const toStandardRequest = (request) => {

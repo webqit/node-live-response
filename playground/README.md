@@ -15,7 +15,7 @@ These recipes demonstrate the **live response** model independently. They build 
 ### [1_live_state](./1_live_state)
 Demonstrates LiveResponse's most fundamental feature: **sending a mutable object as the response body**. Server-side mutations made to this object automatically update the client-side copy in real-time.
 
-### [2_response_replace](./2_response_replace)
+### [2_multi_response](./2_multi_response)
 Demonstrates LiveResponse's The Multi-Response Model where responses are **swapped out with another completely new one over a single HTTP request**—without ever needing to issue a new request.
 
 ### [3_messaging](./3_messaging)
@@ -37,7 +37,7 @@ These recipes demonstrate **LinkedQL's** live queries and sync capabilities.
 **Architecture: Direct Live Queries**
 Demonstrates live queries over PostgreSQL where the live result is projected across the wire and obtained on the client side by reference. The server acts as a conduit, running the queries against PostgreSQL and sending the result as a live response. 
 
-### [5_remote_queries](./5_remote_queries)
+### [5_remote_querying](./5_remote_querying)
 **Architecture: EdgeWorker Integration**
 Demonstrates integrating queries with a dedicated `EdgeWorker`. Here, the `EdgeWorker` exposes a remote PostgreSQL database, and the client application directly queries it using an `EdgeClient`. Live queries still work seamlessly across the protocol.
 

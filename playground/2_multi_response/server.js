@@ -35,5 +35,5 @@ async function handler(req, res) {
         return;
     }
 
-    return fs.createReadStream('./playground/2_response_replace/index.html').pipe(res);
+    return fs.createReadStream('./playground/2_multi_response/index.html').pipe(res);
 }
