@@ -35,17 +35,18 @@ These recipes demonstrate **LinkedQL's** live queries and sync capabilities.
 
 ### [4_live_queries](./4_live_queries)
 **Architecture: Direct Live Queries**
+
 Demonstrates live queries over PostgreSQL where the live result is projected across the wire and obtained on the client side by reference. The server acts as a conduit, running the queries against PostgreSQL and sending the result as a live response. 
 
 ### [5_remote_querying](./5_remote_querying)
 **Architecture: EdgeWorker Integration**
+
 Demonstrates integrating queries with a dedicated `EdgeWorker`. Here, the `EdgeWorker` exposes a remote PostgreSQL database, and the client application directly queries it using an `EdgeClient`. Live queries still work seamlessly across the protocol.
 
 ### [6_sync](./6_sync)
 **Architecture: Local-First Synchronization**
-Showcases full offline-capable, local-first database synchronization. Instead of just querying remote data, the client maintains a synchronized local cache of the database.
 
-<video src="https://github.com/webqit/node-live-response/blob/main/playground/6_sync/demo.mp4?raw=true" controls width="100%"></video>
+Showcases full offline-capable, local-first database synchronization. Instead of just querying remote data, the client maintains a synchronized local cache of the database.
 
 
 ---
