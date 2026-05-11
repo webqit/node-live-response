@@ -45,6 +45,9 @@ Demonstrates integrating queries with a dedicated `EdgeWorker`. Here, the `EdgeW
 **Architecture: Local-First Synchronization**
 Showcases full offline-capable, local-first database synchronization. Instead of just querying remote data, the client maintains a synchronized local cache of the database.
 
+<video src="https://github.com/webqit/node-live-response/blob/main/playground/6_sync/demo.mp4?raw=true" controls width="100%"></video>
+
+
 ---
 
 ## Running the Examples
