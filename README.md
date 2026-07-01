@@ -228,7 +228,7 @@ Above, `await LiveResponse.from(fetch('/counter')).now()` takes a `fetch` call a
 + Keeps remote state and local state in sync
 
 > [!TIP]
-> This example can be previewed live from your local `@webqit/node-live-response` installation. See the **[Playground](https://github.com/webqit/node-live-response/tree/main/playground)**.
+> This example can be previewed in the **[WebQit Playground](https://github.com/webqit/playground)**.
 
 ---
 
@@ -300,7 +300,7 @@ Meanwhile, under the hood `LiveResponse` does:
 + Keeps remote state and local state in sync–while exposing response swaps as `'replace'` events
 
 > [!TIP]
-> This example can be previewed live from your local `@webqit/node-live-response` installation. See the **[Playground](https://github.com/webqit/node-live-response/tree/main/playground)**.
+> This example can be previewed in the **[WebQit Playground](https://github.com/webqit/playground)**.
 
 ---
 
@@ -371,7 +371,7 @@ As before, under the hood `LiveResponse` does:
 + Keeps remote state and local state in sync–while exposing the underlying channel (`port`) for bidirectional messaging
 
 > [!TIP]
-> This example can be previewed live from your local `@webqit/node-live-response` installation. See the **[Playground](https://github.com/webqit/node-live-response/tree/main/playground)**.
+> This example can be previewed in the **[WebQit Playground](https://github.com/webqit/playground)**.
 
 ---
 
