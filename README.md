@@ -39,7 +39,7 @@ On receiving the response, the client can observe those changes in real time:
 Above:
 
 + [`Observer`](https://github.com/webqit/observer) helps make mutations on the ordinary object reactive and observable.
-+ `LiveResponse` carries the object as live state through the wire–keeping it synchronized with the client. (**LiveResponse** lets the host runtime decide the underlying update path. e.g. WebSocket)
++ [`LiveResponse`](https://github.com/webqit/fetch-plus?tab=readme-ov-file#3-bidirectional-messaging-via-message-ports) carries the object as live state through the wire–keeping it synchronized with the client. (**LiveResponse** lets the host runtime decide the underlying update path. e.g. WebSocket)
 + `@webqit/node-live-response` itself–the host runtime–establishes a WebSocket channel under the hood for the update path.
 
 The model broadens into various shapes of realtime applications–**built out of just a single primitive**.
@@ -162,7 +162,11 @@ app.get('/counter', liveMode, async (req, res) => {
 
 ## Interaction Patterns
 
-LiveResponse supports three core interaction patterns.
+LiveResponse supports three core interaction patterns:
+
+1. [Live state projection](#1-live-state-projection)
+2. [Response swapping](#2-response-swapping)
+3. [Bidirectional messaging](#3-bidirectional-messaging)
 
 ---
 

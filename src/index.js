@@ -59,7 +59,7 @@ export function setupLiveRoute(req, res) {
         });
 
         response.headers.set(
-            'X-Message-Port',
+            'X-Live-Session',
             `socket:///?port_id=${portId}`
         );
 
