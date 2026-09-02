@@ -40,11 +40,15 @@ export function setupLiveRoute(req, res) {
     };
 
     // ---- request-scoped capabilities ----
-    req.port = port;
-    req.signal = abortController.signal;
+    Object.defineProperties(req, {
+        signal: { get: () => abortController.signal },
+        port: { get: () => port },
+    });
 
     // ---- response-scoped lifecycle ----
-    res.die = die;
+    Object.defineProperties(res, {
+        die: { get: () => die },
+    });
 
     const originalSend = res.send?.bind(res);
     const originalEnd = res.end.bind(res);
