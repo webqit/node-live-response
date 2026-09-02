@@ -15,7 +15,7 @@
     "realtime",
     "webqit"
   ],
-  "version": "0.1.24-next.0",
+  "version": "0.1.24",
   "license": "MIT",
   "repository": {
     "type": "git",
